@@ -13,6 +13,7 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.PCollectionTuple;
 import org.apache.beam.sdk.values.TupleTag;
+import org.apache.beam.sdk.values.TupleTagList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zenika.com.beam.dataflow.sink.common.ErrorMessage;
@@ -39,7 +40,7 @@ abstract class ConvertToInputOperation extends PTransform<PCollection<PubsubMess
 
 	@Override
 	public PCollectionTuple expand(PCollection<PubsubMessage> input) {
-		input.apply("ConvertToInputOperation", ParDo.of(new DoFn<PubsubMessage, InputOperation>() {
+		return input.apply("ConvertToInputOperation", ParDo.of(new DoFn<PubsubMessage, InputOperation>() {
 			private static final long serialVersionUID = 1L;
 
 			@ProcessElement
@@ -63,8 +64,7 @@ abstract class ConvertToInputOperation extends PTransform<PCollection<PubsubMess
 					Metrics.counter(ConvertToInputOperation.class, "_FAILURE_CONVERSION_TO_RDOINPUTMESSAGE").inc();
 				}
 			}
-		}));
-		return null;
+		})		.withOutputTags(successTag(), TupleTagList.of(failureTag())));
 	}
 
 	@AutoValue.Builder
