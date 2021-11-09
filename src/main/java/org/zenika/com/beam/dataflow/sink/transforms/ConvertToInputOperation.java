@@ -25,7 +25,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.base.Throwables;
 
 @AutoValue
-abstract class ConvertToInputOperation extends PTransform<PCollection<PubsubMessage>, PCollectionTuple> {
+abstract public class ConvertToInputOperation extends PTransform<PCollection<PubsubMessage>, PCollectionTuple> {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(ConvertToInputOperation.class);
@@ -53,7 +53,7 @@ abstract class ConvertToInputOperation extends PTransform<PCollection<PubsubMess
 					// TODO use ingetPubsub const
 					inputOperation.setAttributeMap(pubsubAttributesMap);
 					context.output(successTag(), inputOperation);
-					Metrics.counter(ConvertToInputOperation.class, "SUCCESS_CONVERSION_TO_RDOINPUTMESSAGE").inc();
+					Metrics.counter(ConvertToInputOperation.class, "SUCCESS_CONVERSION_TO_INPUTOPERATION").inc();
 				} catch (IOException e) {
 					final String message = "[ConvertToInputOperation] Invalid Json message";
 					final ErrorMessage em = ErrorMessage.newBuilder()
@@ -61,10 +61,10 @@ abstract class ConvertToInputOperation extends PTransform<PCollection<PubsubMess
 							.withErrorStackTrace(Throwables.getStackTraceAsString(e)).build();
 					LOG.error(message.concat(": {}"), JSONUtils.ToJsonString(em));
 					context.output(failureTag(), em);
-					Metrics.counter(ConvertToInputOperation.class, "_FAILURE_CONVERSION_TO_RDOINPUTMESSAGE").inc();
+					Metrics.counter(ConvertToInputOperation.class, "FAILURE_CONVERSION_TO_INPUTOPERATION").inc();
 				}
 			}
-		})		.withOutputTags(successTag(), TupleTagList.of(failureTag())));
+		}).withOutputTags(successTag(), TupleTagList.of(failureTag())));
 	}
 
 	@AutoValue.Builder

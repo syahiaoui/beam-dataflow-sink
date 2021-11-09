@@ -3,9 +3,16 @@ package org.zenika.com.beam.dataflow.sink.options;
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
 import org.apache.beam.sdk.options.PipelineOptions;
+import org.apache.beam.sdk.options.Validation.Required;
 import org.apache.beam.sdk.options.ValueProvider;
 
 public interface DataflowSinkOptions extends PipelineOptions {
+
+	@Description("Pub/Sub topic to write the output")
+	ValueProvider<String> getOutputTopic();
+
+	void setOutputTopic(ValueProvider<String> value);
+
 	@Description("Table spec to write the output to")
 	ValueProvider<String> getOutputTableSpec();
 
@@ -23,7 +30,7 @@ public interface DataflowSinkOptions extends PipelineOptions {
 	void setInputSubscription(ValueProvider<String> value);
 
 	@Description("This determines whether the template reads from " + "a pub/sub subscription or a topic")
-	@Default.Boolean(false)
+	@Default.Boolean(true)
 	Boolean getUseSubscription();
 
 	void setUseSubscription(Boolean value);
@@ -33,4 +40,17 @@ public interface DataflowSinkOptions extends PipelineOptions {
 	ValueProvider<String> getOutputDeadletterTable();
 
 	void setOutputDeadletterTable(ValueProvider<String> value);
+
+	@Description("Path of the output rejection gcs bucket.")
+	@Required
+	ValueProvider<String> getOutputRejectionBucket();
+
+	void setOutputRejectionBucket(ValueProvider<String> value);
+
+	@Description("Output file's window size in number of minutes.")
+	@Default.Integer(1)
+	Integer getWindowSize();
+
+	void setWindowSize(Integer value);
+
 }
