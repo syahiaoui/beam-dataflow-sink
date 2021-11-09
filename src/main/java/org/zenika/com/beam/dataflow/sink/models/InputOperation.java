@@ -49,19 +49,21 @@ public class InputOperation implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		InputOperation that = (InputOperation) o;
-		return payload.equals(that.payload) && Objects.equals(attributeMap, that.attributeMap);
+	public int hashCode() {
+		return Objects.hash(attributeMap, payload);
 	}
 
 	@Override
-	public int hashCode() {
-		int result = Objects.hash(attributeMap);
-		result = 31 * result + payload.toString().hashCode();
-		return result;
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		InputOperation other = (InputOperation) obj;
+		return Objects.equals(attributeMap, other.attributeMap) && Objects.equals(payload, other.payload);
 	}
+
+
 }

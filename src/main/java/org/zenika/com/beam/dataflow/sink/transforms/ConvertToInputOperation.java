@@ -49,9 +49,10 @@ abstract public class ConvertToInputOperation extends PTransform<PCollection<Pub
 
 				try {
 					final InputOperation inputOperation = new InputOperation(context.element());
-					inputOperation.getAttributeMap().put("ingetPubsub", context.timestamp().toString());
-					// TODO use ingetPubsub const
-					inputOperation.setAttributeMap(pubsubAttributesMap);
+					final Map<String, String> attributes = inputOperation.getAttributeMap();
+					attributes.put(ConvertToOutputOperation.INGEST_PUBSUB, context.timestamp().toString());
+					inputOperation.setAttributeMap(attributes);
+					System.out.println(inputOperation);
 					context.output(successTag(), inputOperation);
 					Metrics.counter(ConvertToInputOperation.class, "SUCCESS_CONVERSION_TO_INPUTOPERATION").inc();
 				} catch (IOException e) {
