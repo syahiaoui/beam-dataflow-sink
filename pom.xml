@@ -44,6 +44,9 @@
 		<flink.artifact.name>beam-runners-flink-1.10</flink.artifact.name>
 		<lombok.version>1.18.22</lombok.version>
 		<auto-value.version>1.8.2</auto-value.version>
+		<powermock.version>2.0.9</powermock.version>
+		<mockito-core.version>3.8.0</mockito-core.version>
+		<truth.version>1.1.2</truth.version>
 	</properties>
 
 	<repositories>
@@ -426,13 +429,35 @@
 			<artifactId>hamcrest-library</artifactId>
 			<version>${hamcrest.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito2</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito-core.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.google.truth</groupId>
+			<artifactId>truth</artifactId>
+			<version>${truth.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- The DirectRunner is needed for unit tests. -->
 		<dependency>
 			<groupId>org.apache.beam</groupId>

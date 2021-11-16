@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @DefaultCoder(SerializableCoder.class)
-public class OutputOperation implements Serializable {
+public class OutputContent implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Metadata metadata;
 	private Object data;
@@ -26,7 +26,7 @@ public class OutputOperation implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		OutputOperation other = (OutputOperation) obj;
+		OutputContent other = (OutputContent) obj;
 		return Objects.equals(data, other.data) && Objects.equals(metadata, other.metadata);
 	}
 	@Override

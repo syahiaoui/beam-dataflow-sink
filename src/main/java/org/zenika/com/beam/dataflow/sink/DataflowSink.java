@@ -16,24 +16,34 @@ import org.joda.time.Duration;
 import org.zenika.com.beam.dataflow.sink.coders.PipelineCoders;
 import org.zenika.com.beam.dataflow.sink.common.ErrorMessage;
 import org.zenika.com.beam.dataflow.sink.models.InputOperation;
-import org.zenika.com.beam.dataflow.sink.models.OutputOperation;
+import org.zenika.com.beam.dataflow.sink.models.OutputContent;
 import org.zenika.com.beam.dataflow.sink.options.DataflowSinkOptions;
-import org.zenika.com.beam.dataflow.sink.transforms.ConvertJsonNodeToStringMessage;
 import org.zenika.com.beam.dataflow.sink.transforms.ConvertToInputOperation;
-import org.zenika.com.beam.dataflow.sink.transforms.ConvertToOutputOperation;
+import org.zenika.com.beam.dataflow.sink.transforms.ProcessData;
+import org.zenika.com.beam.dataflow.sink.transforms.bigquery.SinkToBigQuery;
+import org.zenika.com.beam.dataflow.sink.values.FailsafeElement;
+
+import com.google.api.services.bigquery.model.TableRow;
 
 public class DataflowSink {
 
 	public static final TupleTag<InputOperation> CONVERSION_SUCCESS_TAG = new TupleTag<InputOperation>() {
 		private static final long serialVersionUID = 1L;
 	};
-	public static final TupleTag<OutputOperation> OUTPUT_OPERATION_TAG = new TupleTag<OutputOperation>() {
+	public static final TupleTag<OutputContent> OUTPUT_OPERATION_TAG = new TupleTag<OutputContent>() {
 		private static final long serialVersionUID = 1L;
 	};
 	public static final TupleTag<ErrorMessage> FAILURE_TAG = new TupleTag<ErrorMessage>() {
 		private static final long serialVersionUID = 1L;
 	};
 	public static final TupleTag<KV<String, String>> STRING_MESSAGE_CONVERSION_SUCCESS_TAG = new TupleTag<KV<String, String>>() {
+		private static final long serialVersionUID = 1L;
+	};
+	public static final TupleTag<KV<String, TableRow>> TRANSFORM_OUT = new TupleTag<KV<String, TableRow>>() {
+		private static final long serialVersionUID = 1L;
+	};
+
+	public static final TupleTag<FailsafeElement<KV<String, String>, String>> TRANSFORM_DEADLETTER_OUT = new TupleTag<FailsafeElement<KV<String, String>, String>>() {
 		private static final long serialVersionUID = 1L;
 	};
 
@@ -66,17 +76,24 @@ public class DataflowSink {
 						.withFailureTag(FAILURE_TAG)
 						.build());
 		PCollectionTuple convertionToStringPCTuple = convertionToInputPCTuple.get(CONVERSION_SUCCESS_TAG)
-				.apply("Convert to output", ConvertToOutputOperation.newBuilder().build())
-				.apply("Convert JsonNode to String", ConvertJsonNodeToStringMessage.newBuilder()
-						.withConversionSuccessStringTag(STRING_MESSAGE_CONVERSION_SUCCESS_TAG)
-						.withFailureTag(FAILURE_TAG)
-						.build());
-		PCollection<KV<String, String>> stringMessagesKV = convertionToStringPCTuple
-				.get(STRING_MESSAGE_CONVERSION_SUCCESS_TAG);
-		stringMessagesKV
-				.apply(Values.<String>create())
+				.apply("ProcessData", ProcessData.newBuilder().build());
+
+
+		// #####################################################################################################
+		// Write to pubsub
+		// #####################################################################################################
+		convertionToStringPCTuple
+				.get(STRING_MESSAGE_CONVERSION_SUCCESS_TAG)
+				.apply("Get values from KV", Values.<String>create())
 				.apply("Write to pubsub",
 						PubsubIO.writeStrings().to(options.getOutputTopic()));
+
+		// #####################################################################################################
+		// Write to BigQuery
+		// #####################################################################################################
+		convertionToStringPCTuple
+				.get(STRING_MESSAGE_CONVERSION_SUCCESS_TAG)
+				.apply("sink to BigQuery", new SinkToBigQuery());
 
 		// #####################################################################################################
 		// Write to GCS (DLQ)
